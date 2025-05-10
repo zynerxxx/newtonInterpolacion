@@ -148,6 +148,15 @@ public class NewtonInterpolationGUI extends JFrame {
         }
     }
 
+    private boolean hayRepetidos(double[] x) {
+        for (int i = 0; i < x.length; i++) {
+            for (int j = i + 1; j < x.length; j++) {
+                if (x[i] == x[j]) return true;
+            }
+        }
+        return false;
+    }
+
     private void calcularFdd() {
         try {
             if (tablePoints.isEditing()) {
@@ -158,6 +167,10 @@ public class NewtonInterpolationGUI extends JFrame {
             for (int i = 0; i < n; i++) {
                 x[i] = Double.parseDouble(modelPoints.getValueAt(i, 0).toString());
                 y[i] = Double.parseDouble(modelPoints.getValueAt(i, 1).toString());
+            }
+            if (hayRepetidos(x)) {
+                JOptionPane.showMessageDialog(this, "No puede haber valores repetidos en X", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
             mostrarTablaYPolinomio(x, y, false); // Solo tabla
         } catch (Exception ex) {
@@ -174,6 +187,15 @@ public class NewtonInterpolationGUI extends JFrame {
             for (int i = 0; i < n; i++) {
                 puntos[i][0] = Double.parseDouble(modelPoints.getValueAt(i, 0).toString());
                 puntos[i][1] = Double.parseDouble(modelPoints.getValueAt(i, 1).toString());
+            }
+            // Validar repetidos
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    if (puntos[i][0].equals(puntos[j][0])) {
+                        JOptionPane.showMessageDialog(this, "No puede haber valores repetidos en X", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
             }
             Arrays.sort(puntos, Comparator.comparingDouble(a -> a[0]));
             double[] xOrd = new double[n];
@@ -225,7 +247,8 @@ public class NewtonInterpolationGUI extends JFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if (!isSelected) {
+            // Solo cambiar color si NO se está editando esta celda
+            if (!isSelected && !(table.isCellEditable(row, column) && table.isEditing() && table.getEditingRow() == row && table.getEditingColumn() == column)) {
                 if (column == 0) {
                     c.setBackground(new Color(210, 230, 255)); // Azul suave
                 } else if (column == 1) {
